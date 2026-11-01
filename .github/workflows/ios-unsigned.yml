@@ -19,6 +19,11 @@ jobs:
         run: |
           cd pomme-ios
           xcodegen generate
+      - name: Prepare Vulkan registry for shaderc
+        run: |
+          sdk="$(python3 tools/fetch_moltenvk.py ios)"
+          mkdir -p "$sdk/share/vulkan/registry"
+          curl --fail --location --retry 3 --silent --show-error https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/main/registry/vk.xml -o "$sdk/share/vulkan/registry/vk.xml"
       - name: Build app unsigned
         run: |
           xcodebuild -project pomme-ios/Pomme.xcodeproj -scheme Pomme -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath "$PWD/target/ios-build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
