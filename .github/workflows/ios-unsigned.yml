@@ -13,7 +13,7 @@ jobs:
           submodules: recursive
       - name: Dependencies
         run: |
-          brew install xcodegen cmake ninja pkg-config
+          brew install xcodegen cmake ninja pkg-config shaderc
           rustup target add aarch64-apple-ios
       - name: Generate Xcode project
         run: |
@@ -24,6 +24,11 @@ jobs:
           sdk="$(python3 tools/fetch_moltenvk.py ios)"
           mkdir -p "$sdk/share/vulkan/registry"
           curl --fail --location --retry 3 --silent --show-error https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/main/registry/vk.xml -o "$sdk/share/vulkan/registry/vk.xml"
+      - name: Configure shaderc library
+        run: echo "SHADERC_LIB_DIR=$(brew --prefix shaderc)/lib" >> "$GITHUB_ENV"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
       - name: Build app unsigned
         run: |
           xcodebuild -project pomme-ios/Pomme.xcodeproj -scheme Pomme -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath "$PWD/target/ios-build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
